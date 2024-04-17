@@ -1,5 +1,3 @@
-https://sophisticated-palette.streamlit.app
-
 
 [client]
 

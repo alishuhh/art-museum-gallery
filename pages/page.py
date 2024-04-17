@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 from datetime import datetime
+import pandas as pd
+import numpy as np
 
-st.title("Art Web App")
-st.header("Art Institute of Chicago")
-
+st.header("Page")
