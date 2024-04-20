@@ -1,8 +1,13 @@
+import os
 import streamlit as st
 import requests
 from datetime import datetime
 import pandas as pd
 import numpy as np
+
+css_file = os.path.abspath('style.css')
+with open(css_file) as css:
+    st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
 
 st.sidebar.header("Search The Collection")
 search_query = st.sidebar.text_input("Search for an artwork or artist")
@@ -25,6 +30,6 @@ if museum_choice == "Art Institute of Chicago":
     # rest of app
 
 else:
-    st.image('C:/Users/alish/Desktop/ArtApp/art-museum-gallery/misc/Charles Van den Eycken.jpg', width = 700, caption = "Kittens At Play By Charles Van Den Eycken")
+    st.image(os.path.abspath('misc/Charles Van den Eycken.jpg'), width = 700, caption = "Kittens At Play By Charles Van Den Eycken")
 
 
