@@ -1,9 +1,13 @@
-from urllib import response
+import os
 import streamlit as st
 import requests
 from datetime import datetime
 import pandas as pd
 import numpy as np
+
+css_file = os.path.abspath('style.css')
+with open(css_file) as css:
+    st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
 
 url = "https://api.artic.edu/api/v1/artworks"
 
@@ -41,4 +45,4 @@ if museum_choice == "Art Institute of Chicago":
     # rest of app
 
 else:
-    st.image('misc/Charles Van den Eycken.jpg', width=700, caption="Kittens At Play By Charles Van Den Eycken")
+    st.image(os.path.abspath('misc/Charles Van den Eycken.jpg'), width = 700, caption = "Kittens At Play By Charles Van Den Eycken")
