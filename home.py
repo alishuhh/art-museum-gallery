@@ -76,15 +76,19 @@ st.header("Explore your favorite museum's collection")
 
 museum_choice = st.selectbox("Select a museum", ["", "Art Institute of Chicago", "The Metropolitan Museum of Arts"])
 
-if museum_choice == "Art Institute of Chicago":
+if museum_choice:
     st.subheader("Location")
-    # Coordinates of the Art Institute of Chicago
-    latitude = 41.8796
-    longitude = -87.6224
-elif museum_choice == "The Metropolitan Museum of Arts":
-    st.subheader("Location")
-    latitude = 40.779434
-    longitude = -73.963402
+    if museum_choice == "Art Institute of Chicago":
+        latitude = 41.8796
+        longitude = -87.6224
+    elif museum_choice == "The Metropolitan Museum of Arts":
+        latitude = 40.779434
+        longitude = -73.963402
+    else:
+        st.warning("Please select a museum.")
+        latitude = None
+        longitude = None
+
 
 
 
@@ -110,6 +114,7 @@ elif museum_choice == "The Metropolitan Museum of Arts":
                         st.write(artwork_details.get('place_of_origin', ''))
                         st.write("Medium:", artwork_details.get('medium_display', ''))
                         st.write("------------")
+                        # st.info('This is a purely informational message', icon="ℹ️")
 
             else:
                 st.info("No artworks found. Please refine your search criteria.")
