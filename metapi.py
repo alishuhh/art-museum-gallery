@@ -1,106 +1,125 @@
 import streamlit as st
 import requests
 import os
+import pandas as pd
+import plotly.express as px
+
 
 css_file = os.path.abspath('style.css')
 with open(css_file) as css:
     st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
 
-# Define the base URL for the Met API
-BASE_URL = "https://collectionapi.metmuseum.org/public/collection/v1/"
+csv_file = os.path.abspath('misc/MetObjects.csv')
+df = pd.read_csv(csv_file)
 
-# Define the search endpoint
-SEARCH_ENDPOINT = BASE_URL + "search"
+accession_data = df.groupby('AccessionYear').size().reset_index(name='Count')
 
-# Function to search for artworks based on a query (either name or artist)
+culture_data = df.groupby('Culture').size().reset_index(name='Count')
+culture_data_sorted = culture_data.sort_values(by='Count', ascending=False)
+top_10_cultures = culture_data_sorted.head(10)
+
+# Base endpoint
+BASE_ENDPOINT = "https://collectionapi.metmuseum.org/public/collection/v1/"
+# Search endpoint
+SEARCH_ENDPOINT = BASE_ENDPOINT + "search"
+
+
+# Search artworks function
 def search_artworks(query):
-    # Define the parameters for the search
     params = {
         "q": query,
     }
-
-    # Add artist filtering if specified
-    # if is_artist:
-    #     params["artistOrCulture"] = "true"
-
-    # Make a GET request to the search endpoint
     response = requests.get(SEARCH_ENDPOINT, params=params)
+    data = response.json()
+    return data["objectIDs"]
 
-    # Check if the response is successful
-    if response.status_code == 200:
-        # Parse the JSON response
-        data = response.json()
-        return data["objectIDs"]
-    else:
-        # Handle the error
-        st.error(f"Failed to search artworks: {response.status_code}")
-        return None
 
-# Function to retrieve artwork by its ID
+# Retrieve artworks by ID
 def get_artwork_by_id(artwork_id):
-    # Define the URL for the specific artwork
-    url = BASE_URL + "objects/" + str(artwork_id)
-
-    # Make a GET request to the API
+    url = BASE_ENDPOINT + "objects/" + str(artwork_id)
     response = requests.get(url)
+    data = response.json()
+    return data
 
-    # Check if the response is successful
-    if response.status_code == 200:
-        # Parse the JSON response
-        data = response.json()
-        return data
-    else:
-        # Handle the error
-        st.error(f"Failed to retrieve artwork: {response.status_code}")
-        return None
 
-# Function to display an image from a URL
+# Display images
 def display_image(image_url):
     st.image(image_url)
 
-# Streamlit app starts here
+
+# Streamlit Code
+
+met_image1 = os.path.abspath('misc/The_Metropolitan_Museum_of_Art_Logo.svg.png')
+# met_image2 = os.path.abspath("misc/The-Met_2018_GettyImages-541359628.webp")
+
+placeholder_img = st.image(met_image1)
+placeholder_txt = st.header("Metropolitan Museum of Art Collection")
+# st.image(met_image2, width=800)
+
 st.sidebar.header("The Met Collection")
 
-# Input: Search query
 query = st.sidebar.text_input("Search for an artwork")
 
-# Checkbox to indicate if the search query is for an artist
-# is_artist_search = st.sidebar.checkbox("Search by artist")
-
-# Button to search and display the results
 if st.sidebar.button("Search"):
-    # Search for artworks based on the query
     object_ids = search_artworks(query)
+    placeholder_img.empty()
+    placeholder_txt.empty()
+    st.header(f"Showing results for {query}...")
 
-    # Check if object IDs were retrieved
     if object_ids:
-        # Display the total number of results
         st.sidebar.text(f"Found {len(object_ids)} artworks")
 
-        # Loop through the object IDs and display each artwork
-        for object_id in object_ids[:5]:  # Displaying only first 5 results for demonstration
+        for object_id in object_ids[:5]:
             artwork_data = get_artwork_by_id(object_id)
 
-            # Check if artwork data was retrieved
             if artwork_data:
                 st.subheader(artwork_data.get("title", "Untitled"))
 
-                # Get the image URL
                 primary_image = artwork_data.get("primaryImage")
                 if primary_image:
-                    # Display the image
                     display_image(primary_image)
                 else:
-                    st.warning("No image available for this artwork.")
-
-                # Display the artwork information
+                    st.warning("Image unavailable.")
 
                 st.text(f"Artist: {artwork_data.get('artistDisplayName', 'Unknown')}")
-                st.text(f"Date: {artwork_data.get('objectDate', 'N/A')}")
+                st.text(f"Date: {artwork_data.get('objectDate', 'No information')}")
                 if artwork_data.get('culture'):
-                        st.text(f"Culture: {artwork_data.get('culture', 'N/A')}")
-                st.text(f"Medium: {artwork_data.get('medium', 'N/A')}")
+                        st.text(f"Culture: {artwork_data.get('culture', 'No information')}")
+                st.text(f"Medium: {artwork_data.get('medium', 'No information')}")
 
 
     else:
-        st.warning("No artworks found for the query.")
+        st.warning("No artworks found.")
+
+
+if st.sidebar.button("Collection Data"):
+    placeholder_img.empty()
+    placeholder_txt.empty()
+
+    # parameter = st.radio("Select a parameter",
+    #                      ["AccessionYear", "Period", "Culture"])
+
+    # Sample data for number of artworks acquired each year (replace with actual data)
+    fig = px.bar(
+        accession_data,  # Data Frame
+        x='AccessionYear',  # Columns from the data frame
+        y='Count',
+        title='Accession Year'
+    )
+    fig.update_traces(marker_color="#D30000")
+
+    fig.update_layout(height=800)
+    fig.update_layout(width=1000)
+    st.plotly_chart(fig, width=1000, height=800)
+
+    fig2 = px.bar(
+        top_10_cultures,  # Data Frame
+        y='Culture',  # Columns from the data frame
+        x='Count',
+        title='Culture'
+    )
+    fig2.update_traces(marker_color="#D30000")
+
+    fig2.update_layout(height=800)
+    st.plotly_chart(fig2, use_container_width=True, height=800)
+
