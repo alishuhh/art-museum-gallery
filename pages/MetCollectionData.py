@@ -21,12 +21,12 @@ st.sidebar.page_link(collection_page, label="Collection Data")
 st.sidebar.divider()
 st.markdown("<style> ul {display: none;} </style>", unsafe_allow_html=True)
 
-csv_file = os.path.abspath('misc/MetObjects.csv')
-df = pd.read_csv(csv_file)
+accession_csv = os.path.abspath('misc/accession_year_data.csv')
+culture_csv = os.path.abspath('misc/culture_data.csv')
 
-accession_data = df.groupby('AccessionYear').size().reset_index(name='Count')
+accession_data = pd.read_csv(accession_csv)
+culture_data = pd.read_csv(culture_csv)
 
-culture_data = df.groupby('Culture').size().reset_index(name='Count')
 culture_data_sorted = culture_data.sort_values(by='Count', ascending=False)
 top_10_cultures = culture_data_sorted.head(10)
 
